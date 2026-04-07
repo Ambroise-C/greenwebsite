@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,9 +10,16 @@
     <div class="container">
         <nav class="top-nav">
             <span class="logo">LEAFTASK // v1.0</span>
-            <div class="nav-links">
-                <a href="#">LOGOUT</a>
-                <a href="#">PROFILE</a>
+            <div id="auth-zone">
+                <div id="login-form">
+                    <input type="text" id="userIn" placeholder="Pseudo">
+                    <input type="password" id="passIn" placeholder="Mot de passe">
+                    <button class="action-btn" onclick="handleAuth()">LOGIN / SIGNUP</button>
+                </div>
+                <div id="user-logged" style="display:none;">
+                    <span id="user-display"></span>
+                    <button class="action-btn" onclick="logout()">LOGOUT</button>
+                </div>
             </div>
         </nav>
 
@@ -37,8 +44,7 @@
                         <th class="text-right">ACTIONS</th>
                     </tr>
                 </thead>
-                <tbody id="taskBody">
-                    </tbody>
+                <tbody id="taskBody"></tbody>
             </table>
         </section>
 
