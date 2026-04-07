@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeafTask | Pure Green</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div id="auth-section" class="box">
+            <label>SECURE_ACCESS</label>
+            <div class="input-group" style="flex-direction: column; gap: 10px;">
+                <input type="email" id="emailInput" placeholder="Email">
+                <input type="password" id="passwordInput" placeholder="Password">
+                <div style="display: flex; gap: 10px;">
+                    <button id="loginBtn">LOGIN</button>
+                    <button id="signupBtn" class="action-btn" style="border: 1px solid black; padding: 5px 15px;">SIGN UP</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="dashboard-section" style="display: none;">
+            <nav class="top-nav">
+                <span class="logo">LEAFTASK</span>
+                <div class="nav-links">
+                    <span id="userEmail" style="font-size: 10px; opacity: 0.5;"></span>
+                    <a href="#" id="logoutBtn">LOGOUT</a>
+                </div>
+            </nav>
+
+            <header>
+                <h1>Task Dashboard</h1>
+            </header>
+
+            <section class="box entry-box">
+                <label>CREATE NEW TASK</label>
+                <div class="input-group">
+                    <input type="text" id="taskInput" placeholder="Enter task title...">
+                    <button id="addBtn">ADD TASK</button>
+                </div>
+            </section>
+
+            <section class="box table-box">
+                <table id="taskTable">
+                    <thead>
+                        <tr>
+                            <th>STATUS</th>
+                            <th>TITLE</th>
+                            <th class="text-right">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="taskBody"></tbody>
+                </table>
+            </section>
+
+            <footer class="box stats-box">
+                <span id="stats">Total Tasks: 0 | Completed: 0 | Pending: 0</span>
+            </footer>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
