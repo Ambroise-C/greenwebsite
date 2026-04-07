@@ -17,7 +17,7 @@
                     <button class="action-btn" onclick="handleAuth()">LOGIN / SIGNUP</button>
                 </div>
                 <div id="user-logged" style="display:none;">
-                    <span id="user-display"></span>
+                    <span id="user-display"></span> | <span id="my-code" style="color: #4CAF50; font-weight: bold;"></span>
                     <button class="action-btn" onclick="logout()">LOGOUT</button>
                 </div>
             </div>
@@ -32,6 +32,15 @@
             <div class="input-group">
                 <input type="text" id="taskInput" placeholder="Enter task title...">
                 <button id="addBtn">ADD TASK</button>
+            </div>
+        </section>
+
+        <section class="box entry-box" style="border-top: 2px dashed #4CAF50; margin-top: 10px;">
+            <label>SEND TASK TO A FRIEND (Enter 6-letter code)</label>
+            <div class="input-group">
+                <input type="text" id="destCode" placeholder="ABCDEF" maxlength="6">
+                <input type="text" id="destTask" placeholder="Task for them...">
+                <button onclick="sendTaskToFriend()" style="background-color: #2e7d32;">SEND</button>
             </div>
         </section>
 
