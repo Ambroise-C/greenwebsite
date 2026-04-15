@@ -3,62 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LeafTask | Pure Green</title>
+    <title>LeafTask // Dual</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <nav class="top-nav">
-            <span class="logo">LEAFTASK // v1.0</span>
+            <span class="logo">LEAFTASK // v2.1</span>
             <div id="auth-zone">
                 <div id="login-form">
-                    <input type="text" id="userIn" placeholder="Pseudo">
-                    <input type="password" id="passIn" placeholder="Mot de passe">
-                    <button class="action-btn" onclick="handleAuth()">LOGIN / SIGNUP</button>
+                    <input type="text" id="userIn" placeholder="Pseudo" style="width: 120px;">
+                    <input type="password" id="passIn" placeholder="MDP" style="width: 120px;">
+                    <button onclick="handleAuth()">ENTRER</button>
                 </div>
                 <div id="user-logged" style="display:none;">
-                    <span id="user-display"></span> | <span id="my-code" style="color: #4CAF50; font-weight: bold;"></span>
-                    <button class="action-btn" onclick="logout()">LOGOUT</button>
+                    <span id="user-display"></span> | <span id="my-code" style="color: #4CAF50;"></span>
+                    <button class="action-btn" onclick="logout()">SORTIR</button>
                 </div>
             </div>
         </nav>
 
         <header>
-            <h1>Task Dashboard</h1>
+            <h1>Dashboard</h1>
         </header>
 
-        <section class="box entry-box">
-            <label>CREATE NEW TASK</label>
+        <section class="box">
+            <label>NOUVELLE TÂCHE</label>
             <div class="input-group">
-                <input type="text" id="taskInput" placeholder="Enter task title...">
-                <button id="addBtn">ADD TASK</button>
+                <input type="text" id="taskInput" placeholder="Écrire ici...">
+                <select id="taskScope" style="border: 1px solid var(--border); font-family: inherit; padding: 0 10px;">
+                    <option value="private">🔒 PERSO</option>
+                    <option value="family">👪 FAMILLE</option>
+                </select>
+                <button id="addBtn">AJOUTER</button>
             </div>
         </section>
 
-        <section class="box entry-box" style="border-top: 2px dashed #4CAF50; margin-top: 10px;">
-            <label>SEND TASK TO A FRIEND (Enter 6-letter code)</label>
-            <div class="input-group">
-                <input type="text" id="destCode" placeholder="ABCDEF" maxlength="6">
-                <input type="text" id="destTask" placeholder="Task for them...">
-                <button onclick="sendTaskToFriend()" style="background-color: #2e7d32;">SEND</button>
+        <section class="box" style="border-style: dashed;">
+            <div id="family-join-zone">
+                <label>REJOINDRE UN GROUPE (CODE)</label>
+                <div class="input-group">
+                    <input type="text" id="destCode" placeholder="ABCDEF" maxlength="6">
+                    <button onclick="joinFamily()">REJOINDRE</button>
+                </div>
+            </div>
+            
+            <div id="family-info-zone" style="display:none; margin-top:10px;">
+                <label>MEMBRES DE LA FAMILLE</label>
+                <div id="memberList"></div>
+                <button class="action-btn" onclick="leaveFamily()" style="margin-top:15px; margin-left:0;">Quitter la famille</button>
             </div>
         </section>
 
-        <section class="box table-box">
-            <table id="taskTable">
-                <thead>
-                    <tr>
-                        <th>STATUS</th>
-                        <th>TITLE</th>
-                        <th class="text-right">ACTIONS</th>
-                    </tr>
-                </thead>
-                <tbody id="taskBody"></tbody>
-            </table>
-        </section>
+        <div style="margin-top: 50px;">
+            <label>🔒 MES TÂCHES PERSONNELLES</label>
+            <section class="box" style="padding: 0;">
+                <table>
+                    <thead>
+                        <tr><th width="40"></th><th>TITRE</th><th class="text-right">ACTIONS</th></tr>
+                    </thead>
+                    <tbody id="privateTaskBody"></tbody>
+                </table>
+            </section>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <label>👪 TÂCHES DE LA FAMILLE</label>
+            <section class="box" style="padding: 0;">
+                <table>
+                    <thead>
+                        <tr><th width="40"></th><th>TITRE</th><th class="text-right">ACTIONS</th></tr>
+                    </thead>
+                    <tbody id="familyTaskBody"></tbody>
+                </table>
+            </section>
+        </div>
 
         <footer class="box stats-box">
-            <span id="stats">Total Tasks: 0 | Completed: 0 | Pending: 0</span>
+            <span id="stats">Chargement...</span>
         </footer>
     </div>
     <script src="app.js"></script>
