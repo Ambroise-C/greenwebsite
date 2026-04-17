@@ -1,7 +1,33 @@
-Pour se co mettez ca
+# LeafTask (Go + SQLite)
 
-Rayan
-1234x   
+Ce projet utilise maintenant une base de donnees persistante SQLite via un backend Go.
+Les donnees ne dependent plus du cache navigateur.
+
+## Prerequis
+
+- Go 1.22 ou plus recent installe et disponible dans le PATH
+
+## Lancer le projet
+
+1. Ouvrir un terminal dans le dossier `server`
+2. Installer les dependances et lancer le serveur:
+
+```powershell
+go mod tidy
+go run .
+```
+
+3. Ouvrir le navigateur sur:
+
+```text
+http://localhost:8080
+```
+
+## Notes
+
+- La base SQLite est creee automatiquement dans `server/data/leaftask.db`.
+- Le front (`index.html`, `app.js`, `styles.css`) est servi par le backend Go.
+- Le login conserve le comportement original: si l'utilisateur n'existe pas, il est cree automatiquement.
 
 
 
