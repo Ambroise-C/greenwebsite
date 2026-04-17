@@ -1,121 +1,202 @@
-let db = JSON.parse(localStorage.getItem('leafDB')) || { users: {}, families: {} };
-let currentUser = localStorage.getItem('leafCurrentSession') || null;
+let currentUser = null;
+let state = {
+    user: null,
+    family: { owner: '', members: [] },
+    privateTasks: [],
+    familyTasks: []
+};
+let authToken = localStorage.getItem('leafToken') || null;
 
 const taskInput = document.getElementById('taskInput');
 const taskScope = document.getElementById('taskScope');
 const addBtn = document.getElementById('addBtn');
 
-function save() {
-    localStorage.setItem('leafDB', JSON.stringify(db));
-    render();
+async function api(path, options = {}) {
+    const headers = {
+        'Content-Type': 'application/json',
+        ...(options.headers || {})
+    };
+    if (authToken) {
+        headers.Authorization = `Bearer ${authToken}`;
+    }
+
+    const response = await fetch(path, {
+        ...options,
+        headers
+    });
+
+    let payload = null;
+    try {
+        payload = await response.json();
+    } catch (_) {
+        payload = null;
+    }
+
+    if (!response.ok) {
+        const errorMessage = payload && payload.error ? payload.error : 'Erreur serveur';
+        throw new Error(errorMessage);
+    }
+
+    return payload;
 }
 
 // --- AUTH ---
-function handleAuth() {
+async function handleAuth() {
     const user = document.getElementById('userIn').value.trim();
     const pass = document.getElementById('passIn').value.trim();
     if (!user || !pass) return;
 
-    if (db.users[user]) {
-        if (db.users[user].mdp === pass) login(user);
-        else alert("MDP Incorrect");
-    } else {
-        const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-        db.users[user] = { mdp: pass, code: code, familyId: user, privateTasks: [] };
-        db.families[user] = { owner: user, members: [user], tasks: [] };
-        save();
-        login(user);
+    try {
+        const result = await api('/api/auth', {
+            method: 'POST',
+            body: JSON.stringify({ username: user, password: pass })
+        });
+
+        authToken = result.token;
+        localStorage.setItem('leafToken', authToken);
+        applyState(result.state);
+    } catch (err) {
+        alert(err.message);
     }
 }
 
-function login(u) { 
-    currentUser = u; 
-    localStorage.setItem('leafCurrentSession', u); 
-    render(); 
+function applyState(newState) {
+    state = newState;
+    currentUser = state.user ? state.user.username : null;
+    render();
 }
 
-function logout() { 
-    currentUser = null; 
-    localStorage.removeItem('leafCurrentSession'); 
-    render(); 
+async function refreshState() {
+    if (!authToken) {
+        state = {
+            user: null,
+            family: { owner: '', members: [] },
+            privateTasks: [],
+            familyTasks: []
+        };
+        currentUser = null;
+        render();
+        return;
+    }
+
+    try {
+        const nextState = await api('/api/state', { method: 'GET' });
+        applyState(nextState);
+    } catch (_) {
+        authToken = null;
+        localStorage.removeItem('leafToken');
+        state = {
+            user: null,
+            family: { owner: '', members: [] },
+            privateTasks: [],
+            familyTasks: []
+        };
+        currentUser = null;
+        render();
+    }
+}
+
+async function logout() {
+    try {
+        if (authToken) {
+            await api('/api/logout', { method: 'POST' });
+        }
+    } catch (_) {
+        // Ignore logout API errors and clear local session anyway.
+    }
+
+    authToken = null;
+    localStorage.removeItem('leafToken');
+    state = {
+        user: null,
+        family: { owner: '', members: [] },
+        privateTasks: [],
+        familyTasks: []
+    };
+    currentUser = null;
+    render();
 }
 
 // --- LOGIQUE FAMILLE ---
-function joinFamily() {
+async function joinFamily() {
     const code = document.getElementById('destCode').value.toUpperCase().trim();
-    let targetOwner = Object.keys(db.users).find(u => db.users[u].code === code);
+    if (!code) return;
 
-    if (!targetOwner || targetOwner === currentUser) return alert("Code invalide");
-
-    leaveFamily(false); 
-    db.users[currentUser].familyId = targetOwner;
-    db.families[targetOwner].members.push(currentUser);
-    save();
+    try {
+        await api('/api/family/join', {
+            method: 'POST',
+            body: JSON.stringify({ code })
+        });
+        await refreshState();
+    } catch (err) {
+        alert(err.message);
+    }
 }
 
-function leaveFamily(shouldSave = true) {
-    const oldFam = db.users[currentUser].familyId;
-    if (db.families[oldFam]) {
-        db.families[oldFam].members = db.families[oldFam].members.filter(m => m !== currentUser);
+async function leaveFamily() {
+    try {
+        await api('/api/family/leave', { method: 'POST' });
+        await refreshState();
+    } catch (err) {
+        alert(err.message);
     }
-    db.users[currentUser].familyId = currentUser;
-    if (!db.families[currentUser]) {
-        db.families[currentUser] = { owner: currentUser, members: [currentUser], tasks: [] };
-    } else if (!db.families[currentUser].members.includes(currentUser)) {
-        db.families[currentUser].members.push(currentUser);
-    }
-    if (shouldSave) save();
 }
 
-function kickMember(m) {
-    const famId = db.users[currentUser].familyId;
-    db.users[m].familyId = m;
-    db.families[m] = { owner: m, members: [m], tasks: [] };
-    db.families[famId].members = db.families[famId].members.filter(mem => mem !== m);
-    save();
+async function kickMember(m) {
+    try {
+        await api('/api/family/kick', {
+            method: 'POST',
+            body: JSON.stringify({ username: m })
+        });
+        await refreshState();
+    } catch (err) {
+        alert(err.message);
+    }
 }
 
 // --- TÂCHES ---
-addBtn.onclick = () => {
+addBtn.onclick = async () => {
     const title = taskInput.value.trim();
     if (!currentUser || !title) return;
 
-    if (taskScope.value === "private") {
-        if (!db.users[currentUser].privateTasks) db.users[currentUser].privateTasks = [];
-        db.users[currentUser].privateTasks.push({ id: Date.now(), title, completed: false });
-    } else {
-        const famId = db.users[currentUser].familyId;
-        db.families[famId].tasks.push({ id: Date.now(), title, completed: false, completedBy: null });
+    try {
+        await api('/api/tasks', {
+            method: 'POST',
+            body: JSON.stringify({ scope: taskScope.value, title })
+        });
+        taskInput.value = '';
+        await refreshState();
+    } catch (err) {
+        alert(err.message);
     }
-    taskInput.value = '';
-    save();
 };
 
-function toggleTask(id, scope) {
+async function toggleTask(id, scope) {
     if (!currentUser) return;
-    if (scope === 'private') {
-        const t = db.users[currentUser].privateTasks.find(x => x.id === id);
-        if (t) t.completed = !t.completed;
-    } else {
-        const famId = db.users[currentUser].familyId;
-        const t = db.families[famId].tasks.find(x => x.id === id);
-        if (t) {
-            t.completed = !t.completed;
-            t.completedBy = t.completed ? currentUser : null;
-        }
+
+    try {
+        await api('/api/tasks/toggle', {
+            method: 'POST',
+            body: JSON.stringify({ id, scope })
+        });
+        await refreshState();
+    } catch (err) {
+        alert(err.message);
     }
-    save();
 }
 
-function deleteTask(id, scope) {
+async function deleteTask(id, scope) {
     if (!currentUser) return;
-    if (scope === 'private') {
-        db.users[currentUser].privateTasks = db.users[currentUser].privateTasks.filter(x => x.id !== id);
-    } else {
-        const famId = db.users[currentUser].familyId;
-        db.families[famId].tasks = db.families[famId].tasks.filter(x => x.id !== id);
+
+    try {
+        await api('/api/tasks/delete', {
+            method: 'POST',
+            body: JSON.stringify({ id, scope })
+        });
+        await refreshState();
+    } catch (err) {
+        alert(err.message);
     }
-    save();
 }
 
 // --- RENDU (SÉCURISÉ) ---
@@ -127,7 +208,7 @@ function render() {
     const familyInfoZone = document.getElementById('family-info-zone');
 
     // SI DÉCONNECTÉ : On vide tout et on affiche le login
-    if (!currentUser || !db.users[currentUser]) {
+    if (!currentUser || !state.user) {
         loginForm.style.display = 'block';
         userLogged.style.display = 'none';
         familyInfoZone.style.display = 'none';
@@ -145,9 +226,9 @@ function render() {
     userLogged.style.display = 'block';
     familyInfoZone.style.display = 'block';
     
-    const user = db.users[currentUser];
+    const user = state.user;
     const famId = user.familyId;
-    const family = db.families[famId];
+    const family = state.family;
 
     document.getElementById('user-display').innerText = currentUser.toUpperCase();
     document.getElementById('my-code').innerText = user.code;
@@ -176,10 +257,10 @@ function render() {
     `;
 
     // Remplissage des tables
-    privateBody.innerHTML = (user.privateTasks || []).map(t => renderRow(t, 'private')).join('') || '<tr><td colspan="3" style="text-align:center; color:#ccc;">Vide.</td></tr>';
-    familyBody.innerHTML = family.tasks.map(t => renderRow(t, 'family')).join('') || '<tr><td colspan="3" style="text-align:center; color:#ccc;">Vide.</td></tr>';
+    privateBody.innerHTML = (state.privateTasks || []).map(t => renderRow(t, 'private')).join('') || '<tr><td colspan="3" style="text-align:center; color:#ccc;">Vide.</td></tr>';
+    familyBody.innerHTML = (state.familyTasks || []).map(t => renderRow(t, 'family')).join('') || '<tr><td colspan="3" style="text-align:center; color:#ccc;">Vide.</td></tr>';
 
-    document.getElementById('stats').innerText = `P: ${(user.privateTasks || []).length} / F: ${family.tasks.length} / GROUPE: ${famId.toUpperCase()}`;
+    document.getElementById('stats').innerText = `P: ${(state.privateTasks || []).length} / F: ${(state.familyTasks || []).length} / GROUPE: ${famId.toUpperCase()}`;
 }
 
-render();
+refreshState();
