@@ -44,9 +44,11 @@ async function handleAuth() {
             currentUserData = data; 
             localStorage.setItem('leafCurrentSession', currentUser);
             await refreshData();
+        } else if (response.status === 401) {
+            alert("Mot de passe incorrect pour ce pseudo !");
         } else {
-            alert("Erreur : Identifiants incorrects ou utilisateur inexistant.");
-        }
+            alert("Erreur lors de l'authentification");
+}
     } catch (err) {
         alert("Serveur Go injoignable");
     }
@@ -57,7 +59,10 @@ async function addTask() {
     const title = getEl('taskInput').value.trim();
     const scope = getEl('taskScope').value;
 
-    if (!currentUser || !currentUserData.family_id) {
+    console.log(currentUser)
+    console.log(currentUserData.family_ID)
+
+    if (!currentUser || !currentUserData.family_ID) {
         alert("Session non chargée, réessayez...");
         return;
     }
@@ -68,10 +73,11 @@ async function addTask() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                title: title,
-                scope: scope,
-                user_id: currentUser,
-                family_id: currentUserData.family_id
+            title: title,
+            scope: scope,
+            user_ID: currentUserData.user_ID,     
+            family_ID: currentUserData.family_ID, 
+            completed: false
             })
         });
 

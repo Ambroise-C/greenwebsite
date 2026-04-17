@@ -1,26 +1,25 @@
 package internal
 
-// User correspond à ton db.users
 type User struct {
-	Username     string `json:"username"` // Clé primaire
-	Password     string `json:"password"`
-	Code         string `json:"code"`
-	FamilyID     string `json:"family_id"`
+    UserID   int64  `json:"user_ID" db:"user_ID"`
+    Username string `json:"username" db:"username"`
+    Password string `json:"password" db:"password"`
+    Code     string `json:"code" db:"code"`
+    FamilyID int64  `json:"family_ID" db:"family_ID"` // Changé en int64
 }
 
-// Task correspond à tes objets tâches
 type Task struct {
-	ID          int64     `json:"id"`
-	Title       string    `json:"title"`
-	Completed   bool      `json:"completed"`
-	CompletedBy string    `json:"completed_by,omitempty"`
-	UserID      string    `json:"user_id,omitempty"`   // Pour les tâches privées
-	FamilyID    string    `json:"family_id,omitempty"` // Pour les tâches famille
-	Scope       string    `json:"scope"`               // "private" ou "family"
+    TaskID      int64  `json:"task_ID,omitempty" db:"task_ID"`
+    Title       string `json:"title" db:"title"`
+    Completed   bool   `json:"completed" db:"completed"`
+    CompletedBy string `json:"completedBy" db:"completedBy"`
+    UserID      int64  `json:"user_ID" db:"user_ID"`
+    FamilyID    int64  `json:"family_ID" db:"family_ID"`
+    Scope       string `json:"scope" db:"scope"`
 }
 
-// Family correspond à ton db.families
 type Family struct {
-	Owner   string   `json:"owner"`
-	Members []string `json:"members"`
+    FamilyID int64    `json:"family_ID" db:"family_ID"`
+    OwnerID  int64    `json:"owner_ID" db:"owner_ID"`
+    Members  []string `json:"members" db:"members"`
 }

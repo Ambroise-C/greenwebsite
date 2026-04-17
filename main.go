@@ -19,7 +19,7 @@ func main() {
 
     // 3. TEST DE CONNEXION (Avant de lancer le serveur)
     var testData []map[string]interface{}
-    err := client.DB.From("profiles").Select("*").Limit(1).Execute(&testData)
+    err := client.DB.From("users").Select("*").Limit(1).Execute(&testData)
 
     if err != nil {
         log.Printf("❌ ERREUR : Impossible de lire la ligne : %v", err)
@@ -32,10 +32,10 @@ func main() {
     }
 
     // 4. Configurer les handlers
-    h := &api.Handler{SB: client}
+	h := &api.Handler{SB: client}
 
-	http.HandleFunc("/api/tasks", h.TasksHandler)
 	http.HandleFunc("/api/auth", h.Auth)
+	http.HandleFunc("/api/tasks", h.TasksHandler)
 
     // Servir le dossier public (ton HTML/CSS/JS)
     fs := http.FileServer(http.Dir("./public"))
