@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"math/rand"
 	"time"
-
+	"fmt"
 	"github.com/nedpals/supabase-go"
 )
 
@@ -184,16 +184,24 @@ func (h *Handler) TasksHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	dbUser := users[0]
 
+	// POST
+
 	if r.Method == http.MethodPost {
 		var newTask internal.Task
 		if err := json.NewDecoder(r.Body).Decode(&newTask); err != nil {
 			http.Error(w, "JSON invalide", 400)
 			return
 		}
-		
+		fmt.Printf("JSON reçu et décodé : %+v\n", newTask)
 		newTask.UserID = dbUser.UserID
-		newTask.FamilyID = dbUser.FamilyID
 		newTask.Completed = false
+
+		if newTask.Scope == "private" {
+			newTask.FamilyID = nil 
+		} else {
+			familyIDCopy := dbUser.FamilyID
+			newTask.FamilyID = &familyIDCopy
+		}
 
 		err := h.SB.DB.From("tasks").Insert(newTask).Execute(nil)
 		if err != nil {
@@ -209,13 +217,10 @@ func (h *Handler) TasksHandler(w http.ResponseWriter, r *http.Request) {
 	var private []internal.Task
 	var family []internal.Task
 
-	uID := strconv.FormatInt(int64(dbUser.UserID), 10)
+	uID := strconv.FormatInt(dbUser.UserID, 10)
 	h.SB.DB.From("tasks").Select("*").Eq("user_ID", uID).Eq("scope", "private").Execute(&private)
-
-	if dbUser.FamilyID != 0 {
-		fID := strconv.FormatInt(int64(dbUser.FamilyID), 10)
-		h.SB.DB.From("tasks").Select("*").Eq("family_ID", fID).Eq("scope", "family").Execute(&family)
-	}
+	fID := strconv.FormatInt(dbUser.FamilyID, 10)
+	h.SB.DB.From("tasks").Select("*").Eq("family_ID", fID).Eq("scope", "family").Execute(&family)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -223,4 +228,22 @@ func (h *Handler) TasksHandler(w http.ResponseWriter, r *http.Request) {
 		"private": private,
 		"family":  family,
 	})
+
+	if r.Method == http.MethodDelete {
+		idStr := r.URL.Query().Get("id")
+		if idStr == "" {
+			http.Error(w, "ID manquant", 400)
+			return
+		}
+
+		err := h.SB.DB.From("tasks").Delete().Eq("task_ID", idStr).Execute(nil)
+		if err != nil {
+			log.Printf("Erreur suppression DB: %v", err)
+			http.Error(w, "Erreur serveur", 500)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		return
+	}
 }

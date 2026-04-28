@@ -13,7 +13,7 @@ type Task struct {
     Completed   bool   `json:"completed" db:"completed"`
     CompletedBy string `json:"completedBy" db:"completedBy"`
     UserID      int64  `json:"user_ID" db:"user_ID"`
-    FamilyID    int64  `json:"family_ID" db:"family_ID"`
+    FamilyID    *int64  `json:"family_ID" db:"family_ID"`
     Scope       string `json:"scope" db:"scope"`
 }
 

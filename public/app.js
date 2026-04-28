@@ -95,6 +95,25 @@ async function addTask() {
     }
 }
 
+async function deleteTask(id) {
+    if(!confirm("Delete this task ?")) return;
+    const url = `/api/tasks?id=${id}&user=${encodeURIComponent(currentUser)}`;
+    try {
+        const response = await fetch(url, {
+            method: 'DELETE'
+        });
+        if (response.ok) {
+            await refreshData();
+        } else {
+            alert("Error while supressing");
+        }
+    } catch (err) {
+        console.error("Error:", err);
+    }
+}
+
+
+// 6. logout
 function logout() { 
     currentUser = null; 
     localStorage.removeItem('leafCurrentSession'); 
@@ -121,7 +140,9 @@ function render() {
         <tr>
             <td><input type="checkbox" ${t.completed ? 'checked' : ''}></td>
             <td class="${t.completed ? 'completed' : ''}">${t.title}</td>
-            <td class="text-right"><button class="action-btn">DELETE</button></td>
+            <td class="text-right">
+            <button class="action-btn" onclick="deleteTask(${t.task_ID})">DELETE</button>
+            </td>
         </tr>
     `;
 
