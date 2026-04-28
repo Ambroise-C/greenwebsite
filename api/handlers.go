@@ -6,12 +6,70 @@ import (
 	"mon-projet/internal"
 	"net/http"
 	"strconv"
+	"math/rand"
+	"time"
 
 	"github.com/nedpals/supabase-go"
 )
 
 type Handler struct {
 	SB *supabase.Client
+}
+
+func generateShortCode(n int) string {
+	rand.Seed(time.Now().UnixNano())
+	var letters = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+	s := make([]rune, n)
+	for i := range s {
+		s[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(s)
+}
+
+func (h *Handler) getNewFamilyID() int64 {
+    var allIds []struct {
+        FamilyID int64 `json:"family_ID"`
+    }
+
+    err := h.SB.DB.From("families").Select("family_ID").Execute(&allIds)
+    
+    var maxID int64 = 0
+    
+    if err == nil && len(allIds) > 0 {
+        for _, f := range allIds {
+			log.Printf("comparing family_ID : %d with current max_ID %d", f.FamilyID, maxID)
+            if f.FamilyID > maxID {
+                maxID = f.FamilyID
+            }
+        }
+    } else if err != nil {
+        log.Printf("Erreur lors de la récupération des IDs : %v", err)
+    }
+	log.Printf("Max id founded is %d, and we will use %d as an id", maxID, maxID +1)
+    return maxID + 1
+}
+
+func (h *Handler) getNewUserID() int64 {
+    var allIds []struct {
+        UserID int64 `json:"user_ID"`
+    }
+
+    err := h.SB.DB.From("users").Select("user_ID").Execute(&allIds)
+    
+    var maxID int64 = 0
+    
+    if err == nil && len(allIds) > 0 {
+        for _, f := range allIds {
+			log.Printf("comparing user_ID : %d with current max_ID %d", f.UserID, maxID)
+            if f.UserID > maxID {
+                maxID = f.UserID
+            }
+        }
+    } else if err != nil {
+        log.Printf("Erreur lors de la récupération des IDs : %v", err)
+    }
+	log.Printf("Max id founded is %d, and we will use %d as an id", maxID, maxID +1)
+    return maxID + 1
 }
 
 func (h *Handler) Auth(w http.ResponseWriter, r *http.Request) {
@@ -29,15 +87,19 @@ func (h *Handler) Auth(w http.ResponseWriter, r *http.Request) {
 
 	var user internal.User
 	if len(users) == 0 {
+
+		new_family_ID := h.getNewFamilyID()
+		new_user_ID := h.getNewUserID()
+
+
 		log.Printf("Création compte : %s", creds.User)
 		user = internal.User{
+			UserID: new_user_ID,
 			Username: creds.User,
 			Password: creds.Pass,
-			Code:     "ABC123", 
-			FamilyID: 0,
+			FamilyID: new_family_ID,
 		}
 
-		// 1. Insertion de l'utilisateur
 		var inserted []internal.User
 		err := h.SB.DB.From("users").Insert(user).Execute(&inserted)
 		if err != nil || len(inserted) == 0 {
@@ -47,12 +109,25 @@ func (h *Handler) Auth(w http.ResponseWriter, r *http.Request) {
 		}
 		user = inserted[0]
 
-		// --- DÉBUT CRÉATION FAMILLE AUTOMATIQUE ---
-		
-		// 2. Préparation de la nouvelle famille (Owner = l'utilisateur actuel)
+		var existingCodes []struct{ Code string }
+		err = h.SB.DB.From("families").Select("code").Execute(&existingCodes)
+		if err != nil {
+			log.Printf("Avertissement : impossible de vérifier l'unicité via la liste complète : %v", err)
+		}
+		codeMap := make(map[string]bool)
+		for _, f := range existingCodes {
+			codeMap[f.Code] = true
+		}
+		familyCode := generateShortCode(7)
+		for codeMap[familyCode] {
+			familyCode = generateShortCode(7)
+		}
+
 		newFamily := internal.Family{
-			OwnerID: user.UserID,
-			Members: []string{user.Username},
+			FamilyID: new_family_ID,
+			OwnerID:  new_user_ID,
+			Members:  []string{user.Username},
+			Code:     familyCode,
 		}
 
 		// 3. Insertion de la famille dans Supabase
@@ -87,6 +162,8 @@ func (h *Handler) Auth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
 }
+
+
 
 func (h *Handler) TasksHandler(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("user")
@@ -132,11 +209,11 @@ func (h *Handler) TasksHandler(w http.ResponseWriter, r *http.Request) {
 	var private []internal.Task
 	var family []internal.Task
 
-	uID := strconv.FormatInt(dbUser.UserID, 10)
+	uID := strconv.FormatInt(int64(dbUser.UserID), 10)
 	h.SB.DB.From("tasks").Select("*").Eq("user_ID", uID).Eq("scope", "private").Execute(&private)
 
 	if dbUser.FamilyID != 0 {
-		fID := strconv.FormatInt(dbUser.FamilyID, 10)
+		fID := strconv.FormatInt(int64(dbUser.FamilyID), 10)
 		h.SB.DB.From("tasks").Select("*").Eq("family_ID", fID).Eq("scope", "family").Execute(&family)
 	}
 

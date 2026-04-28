@@ -4,8 +4,7 @@ type User struct {
     UserID   int64  `json:"user_ID" db:"user_ID"`
     Username string `json:"username" db:"username"`
     Password string `json:"password" db:"password"`
-    Code     string `json:"code" db:"code"`
-    FamilyID int64  `json:"family_ID" db:"family_ID"` // Changé en int64
+    FamilyID int64  `json:"family_ID" db:"family_ID"`
 }
 
 type Task struct {
@@ -22,4 +21,5 @@ type Family struct {
     FamilyID int64    `json:"family_ID" db:"family_ID"`
     OwnerID  int64    `json:"owner_ID" db:"owner_ID"`
     Members  []string `json:"members" db:"members"`
+    Code string `json:"code" db: "code"`
 }
