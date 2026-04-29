@@ -141,6 +141,9 @@ function logout() {
     currentUserData = { family_ID: 0, code: "", user_ID: 0, members: [] };
     currentTasks = { private: [], family: [] };
     localStorage.removeItem('leafCurrentSession'); 
+    const memberListEl = getEl('memberList');
+    if (memberListEl) memberListEl.innerText = "";
+    
     render(); 
 }
 
@@ -148,30 +151,39 @@ function render() {
     if (!currentUser) {
         getEl('login-form').style.display = 'block';
         getEl('user-logged').style.display = 'none';
+        getEl('family-join-zone').style.display = 'none';
+        getEl('family-info-zone').style.display = 'none';
         getEl('privateTaskBody').innerHTML = '<tr><td colspan="3">Please log in</td></tr>';
         getEl('familyTaskBody').innerHTML = '<tr><td colspan="3">Please log in</td></tr>';
         getEl('stats').innerText = "Disconnected";
         return;
     }
-
     getEl('login-form').style.display = 'none';
     getEl('user-logged').style.display = 'block';
-    getEl('user-display').innerText = currentUser.toUpperCase();
-    
+    getEl('user-display').innerText = currentUser;
     const codeEl = getEl('my-code');
     codeEl.innerText = currentUserData.code || "---";
     codeEl.onclick = copyCode; 
     codeEl.style.cursor = "pointer";
     codeEl.title = "Click to copy";
-
     const hasFamily = currentUserData.members && currentUserData.members.length > 1;
-    getEl('family-join-zone').style.display = hasFamily ? 'none' : 'block';
-    getEl('family-info-zone').style.display = hasFamily ? 'block' : 'none';
-    if(hasFamily) getEl('memberList').innerText = currentUserData.members.join(', ');
+    
+    if (hasFamily) {
+        getEl('family-join-zone').style.display = 'none';
+        getEl('family-info-zone').style.display = 'block';
+        getEl('memberList').innerText = currentUserData.members.join(', ');
+    } else {
+        getEl('family-join-zone').style.display = 'block';
+        getEl('family-info-zone').style.display = 'none';
+        getEl('memberList').innerText = "";
+    }
 
     const renderRow = (t) => `
         <tr>
-            <td><input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask(${t.task_ID}, this.checked)"></td>
+            <td>
+                <input type="checkbox" ${t.completed ? 'checked' : ''} 
+                    onchange="toggleTask(${t.task_ID}, this.checked)">
+            </td>
             <td>
                 <span class="${t.completed ? 'completed' : ''}">${t.title}</span>
                 ${t.completed && t.completedBy ? `<br><small style="color:gray">✅ by ${t.completedBy}</small>` : ''}
@@ -184,6 +196,7 @@ function render() {
 
     getEl('privateTaskBody').innerHTML = currentTasks.private.map(renderRow).join('') || '<tr><td colspan="3">Empty</td></tr>';
     getEl('familyTaskBody').innerHTML = currentTasks.family.map(renderRow).join('') || '<tr><td colspan="3">Empty</td></tr>';
+    
     getEl('stats').innerText = `Private: ${currentTasks.private.length} | Family: ${currentTasks.family.length}`;
 }
 
