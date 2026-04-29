@@ -21,5 +21,5 @@ type Family struct {
     FamilyID int64    `json:"family_ID" db:"family_ID"`
     OwnerID  int64    `json:"owner_ID" db:"owner_ID"`
     Members  []string `json:"members" db:"members"`
-    Code string `json:"code" db: "code"`
+    Code string `json:"code" db:"code"`
 }

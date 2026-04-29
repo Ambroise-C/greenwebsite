@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,13 +12,13 @@
             <span class="logo">LEAFTASK // v2.1</span>
             <div id="auth-zone">
                 <div id="login-form">
-                    <input type="text" id="userIn" placeholder="Pseudo" style="width: 120px;">
-                    <input type="password" id="passIn" placeholder="MDP" style="width: 120px;">
-                    <button onclick="handleAuth()">ENTRER</button>
+                    <input type="text" id="userIn" placeholder="Username" style="width: 120px;">
+                    <input type="password" id="passIn" placeholder="Password" style="width: 120px;">
+                    <button onclick="handleAuth()">LOGIN</button>
                 </div>
                 <div id="user-logged" style="display:none;">
-                    <span id="user-display"></span> | <span id="my-code" style="color: #4CAF50;"></span>
-                    <button class="action-btn" onclick="logout()">SORTIR</button>
+                    <span id="user-display"></span> | <span id="my-code" style="color: #4CAF50; font-weight: bold;"></span>
+                    <button class="action-btn" onclick="logout()" style="margin-left: 10px;">LOGOUT</button>
                 </div>
             </div>
         </nav>
@@ -28,39 +28,39 @@
         </header>
 
         <section class="box">
-            <label>NOUVELLE TÂCHE</label>
+            <label>NEW TASK</label>
             <div class="input-group">
-                <input type="text" id="taskInput" placeholder="Écrire ici...">
+                <input type="text" id="taskInput" placeholder="Write here...">
                 <select id="taskScope" style="border: 1px solid var(--border); font-family: inherit; padding: 0 10px;">
-                    <option value="private">🔒 PERSO</option>
-                    <option value="family">👪 FAMILLE</option>
+                    <option value="private">🔒 PRIVATE</option>
+                    <option value="family">👪 FAMILY</option>
                 </select>
-                <button id="addBtn" onclick="addTask()">AJOUTER</button>
+                <button id="addBtn" onclick="addTask()">ADD</button>
             </div>
         </section>
 
         <section class="box" style="border-style: dashed;">
             <div id="family-join-zone">
-                <label>REJOINDRE UN GROUPE (CODE)</label>
+                <label>JOIN A FAMILY (CODE)</label>
                 <div class="input-group">
-                    <input type="text" id="destCode" placeholder="ABCDEF" maxlength="6">
-                    <button onclick="joinFamily()">REJOINDRE</button>
+                    <input type="text" id="destCode" placeholder="ABCD123" maxlength="7">
+                    <button onclick="joinFamily()">JOIN</button>
                 </div>
             </div>
             
             <div id="family-info-zone" style="display:none; margin-top:10px;">
-                <label>MEMBRES DE LA FAMILLE</label>
+                <label>FAMILY MEMBERS</label>
                 <div id="memberList"></div>
-                <button class="action-btn" onclick="leaveFamily()" style="margin-top:15px; margin-left:0;">Quitter la famille</button>
+                <button class="action-btn" onclick="leaveFamily()" style="margin-top:15px; margin-left:0;">Leave family</button>
             </div>
         </section>
 
         <div style="margin-top: 50px;">
-            <label>🔒 MES TÂCHES PERSONNELLES</label>
+            <label>🔒 MY PRIVATE TASKS</label>
             <section class="box" style="padding: 0;">
                 <table>
                     <thead>
-                        <tr><th width="40"></th><th>TITRE</th><th class="text-right">ACTIONS</th></tr>
+                        <tr><th width="40"></th><th>TITLE</th><th class="text-right">ACTIONS</th></tr>
                     </thead>
                     <tbody id="privateTaskBody"></tbody>
                 </table>
@@ -68,11 +68,11 @@
         </div>
 
         <div style="margin-top: 40px;">
-            <label>👪 TÂCHES DE LA FAMILLE</label>
+            <label>👪 FAMILY TASKS</label>
             <section class="box" style="padding: 0;">
                 <table>
                     <thead>
-                        <tr><th width="40"></th><th>TITRE</th><th class="text-right">ACTIONS</th></tr>
+                        <tr><th width="40"></th><th>TITLE</th><th class="text-right">ACTIONS</th></tr>
                     </thead>
                     <tbody id="familyTaskBody"></tbody>
                 </table>
@@ -80,7 +80,7 @@
         </div>
 
         <footer class="box stats-box">
-            <span id="stats">Chargement...</span>
+            <span id="stats">Loading...</span>
         </footer>
     </div>
     <script src="app.js"></script>

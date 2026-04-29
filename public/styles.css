@@ -54,6 +54,13 @@ td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
 .text-right { text-align: right; }
 
 .action-btn { background: none; color: var(--text); padding: 0; border: none; text-decoration: underline; font-size: 0.7rem; margin-left: 10px; }
-.completed { text-decoration: line-through; opacity: 0.4; }
+.completed { text-decoration: line-through; }
+small { text-decoration: none; }
 
 .stats-box { font-size: 0.8rem; font-weight: bold; }
+#my-code {
+    user-select: all; 
+    cursor: pointer;
+    font-family: 'Courier New', Courier, monospace; 
+    display: inline-block; 
+}
