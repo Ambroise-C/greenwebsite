@@ -1,37 +1,46 @@
 Leaf Task 🌿
-  
-Leaf Task est une plateforme de gestion de tâches éco-responsables conçue pour aider les individus et les familles à adopter des habitudes durables au quotidien. Ce projet a été développé dans le cadre du module Sustainable Digital (TI6161).  
 
+Leaf Task is an eco-responsible task management platform designed to help individuals and families adopt sustainable habits in their daily lives. This project was developed as part of the Sustainable Digital module (TI6161).
 
-🚀 Vision du ProjetL'objectif est de proposer un service utile et fonctionnel tout en minimisant son impact environnemental grâce aux principes de sobriété numérique:  
+🚀 Project Vision
+The objective is to provide a useful and functional service while minimizing its environmental impact through digital sobriety principles:
 
+- Functional Simplicity: Only essential features (MVP).
+- Technical Sobriety: Use of performant and lightweight technologies (Go, Vanilla JS).
+- Eco-Design: Minimalist interface to reduce data transfer and cognitive load.
 
-Simplicité fonctionnelle : Uniquement les fonctionnalités essentielles (MVP).  
-Sobriété technique : Utilisation de technologies performantes et légères (Go, Vanilla JS).  
-Éco-conception : Interface minimaliste pour réduire le transfert de données et la charge cognitive.  
+🛠️ Technical Architecture
+The project follows a modular structure to ensure maintainability:
 
-🛠️ Architecture TechniqueLe projet suit une structure modulaire pour assurer la maintenabilité:  Back-end : API REST développée en Go (dossiers api/ et internal/).Front-end : Interface légère en HTML/CSS/JS sans frameworks lourds (dossier public/).Base de données : Gestion relationnelle des Utilisateurs, Familles et Tâches.  
+- Back-end: REST API developed in Go (api/ and internal/ folders).
+- Front-end: Lightweight interface in HTML/CSS/JS without heavy frameworks (public/ folder).
+- Database: Relational management of Users, Families, and Tasks.
 
-📋 Fonctionnalités (MVP)Gestion des utilisateurs : Inscription, connexion et gestion de profil (CRUD complet).  
+📋 Features (MVP)
+- User Management: Registration, login, and profile management (full CRUD).
+- Family System: Create groups via invitation code and member management by an administrator.
+- Dual Dashboard: Visual separation between private personal tasks and shared family tasks.
+- Eco-Responsible Tracking: Task validation to monitor progress on common green initiatives.
 
+💻 Installation and Launch
+Clone the repository:
+```bash
+git clone https://github.com/votre-repo/greenwebsite.git
+```
 
-Système de Famille : Création de groupes via un code d'invitation et gestion des membres par un administrateur.  Double Dashboard : Séparation visuelle entre les tâches personnelles privées et les tâches partagées au sein de la famille.  
+Launch the Go server:
+```bash
+go run main.go
+```
 
-Suivi Éco-responsable : Validation des tâches pour suivre l'avancement des initiatives vertes communes.  
+Access the application:
+Open your browser at http://localhost:8080.
 
+For testing connection, credentials are: Username: Rayan, Password: 1234
 
-💻 Installation et LancementCloner le dépôt :Bashgit clone https://github.com/votre-repo/greenwebsite.git
-
-
-
-Lancer le serveur Go :
-Bashgo run main.go
-
-
-Accéder à l'application : 
-
-Ouvrez votre navigateur sur http://localhost:8080.
-
-Pour faire des test de connection, les login sont: Rayan  mdp : 1234
-
-👥 L'ÉquipeProjet réalisé par:  Rayan Boumedine Alexis Launay Ambroise Couturier Paul Mahaut
+👥 The Team
+Project realized by:
+- Rayan Boumedine
+- Alexis Launay
+- Ambroise Couturier
+- Paul Mahaut
