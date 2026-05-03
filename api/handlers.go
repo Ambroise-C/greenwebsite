@@ -7,7 +7,10 @@ import (
 	"mon-projet/internal"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Handler struct {
@@ -89,7 +92,7 @@ func (h *Handler) Auth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get user by username
-	users, _ := h.SB.SelectFrom("users", "*", map[string]interface{}{"username": creds.User})
+	users, _ := h.SB.SelectFrom("users", "user_ID,username,password,family_ID", map[string]interface{}{"username": creds.User})
 
 	var user internal.User
 	if len(users) == 0 {
@@ -100,8 +103,18 @@ func (h *Handler) Auth(w http.ResponseWriter, r *http.Request) {
 		user = internal.User{
 			UserID:   new_user_ID,
 			Username: creds.User,
-			Password: creds.Pass,
+			Password: func() string {
+				hashedPassword, err := bcrypt.GenerateFromPassword([]byte(creds.Pass), bcrypt.DefaultCost)
+				if err != nil {
+					return ""
+				}
+				return string(hashedPassword)
+			}(),
 			FamilyID: new_family_ID,
+		}
+		if user.Password == "" {
+			http.Error(w, "Creation error", 500)
+			return
 		}
 
 		// Insert user
@@ -167,7 +180,12 @@ func (h *Handler) Auth(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		if user.Password != creds.Pass {
+		if strings.HasPrefix(user.Password, "$2") {
+			if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(creds.Pass)); err != nil {
+				http.Error(w, "Incorrect password", 401)
+				return
+			}
+		} else if user.Password != creds.Pass {
 			http.Error(w, "Incorrect password", 401)
 			return
 		}
@@ -175,6 +193,51 @@ func (h *Handler) Auth(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
+}
+
+func (h *Handler) UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPatch {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	username := r.URL.Query().Get("user")
+	if username == "" {
+		http.Error(w, "Missing user", http.StatusBadRequest)
+		return
+	}
+
+	var updates map[string]interface{}
+	if err := json.NewDecoder(r.Body).Decode(&updates); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	if len(updates) == 0 {
+		http.Error(w, "No fields to update", http.StatusBadRequest)
+		return
+	}
+
+	if password, ok := updates["password"].(string); ok && password != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err != nil {
+			http.Error(w, "Update error", http.StatusInternalServerError)
+			return
+		}
+		updates["password"] = string(hashedPassword)
+	}
+
+	if usernameValue, ok := updates["username"].(string); ok && usernameValue == "" {
+		http.Error(w, "Invalid username", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.SB.UpdateTable("users", updates, map[string]interface{}{"username": username}); err != nil {
+		http.Error(w, "Update error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(200)
 }
 
 func (h *Handler) TasksHandler(w http.ResponseWriter, r *http.Request) {
@@ -185,7 +248,7 @@ func (h *Handler) TasksHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get user by username
-	users, _ := h.SB.SelectFrom("users", "*", map[string]interface{}{"username": username})
+	users, _ := h.SB.SelectFrom("users", "user_ID,username,password,family_ID", map[string]interface{}{"username": username})
 	if len(users) == 0 {
 		http.Error(w, "User not found", 404)
 		return
@@ -260,7 +323,7 @@ func (h *Handler) JoinFamilyHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&body)
 
 	// 1. Get the user and their current family to clean up later
-	users, _ := h.SB.SelectFrom("users", "*", map[string]interface{}{"username": username})
+	users, _ := h.SB.SelectFrom("users", "user_ID,username,password,family_ID", map[string]interface{}{"username": username})
 	if len(users) == 0 {
 		http.Error(w, "User not found", 404)
 		return
@@ -342,7 +405,7 @@ func (h *Handler) LeaveFamilyHandler(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("user")
 
 	// 1. Get user data
-	users, _ := h.SB.SelectFrom("users", "*", map[string]interface{}{"username": username})
+	users, _ := h.SB.SelectFrom("users", "user_ID,username,password,family_ID", map[string]interface{}{"username": username})
 	if len(users) == 0 {
 		http.Error(w, "User not found", 404)
 		return

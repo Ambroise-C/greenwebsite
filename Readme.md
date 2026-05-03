@@ -1,46 +1,57 @@
-Leaf Task 🌿
+# LeafTask
 
-Leaf Task is an eco-responsible task management platform designed to help individuals and families adopt sustainable habits in their daily lives. This project was developed as part of the Sustainable Digital module (TI6161).
+LeafTask is a lightweight task management app focused on eco-responsible habits.
+It is built with Go, Vanilla JS, and Supabase to keep the stack simple and fast.
+The goal is to keep the product useful while staying low complexity and low energy.
 
-🚀 Project Vision
-The objective is to provide a useful and functional service while minimizing its environmental impact through digital sobriety principles:
+Deployed URL: to be filled after Railway deployment.
 
-- Functional Simplicity: Only essential features (MVP).
-- Technical Sobriety: Use of performant and lightweight technologies (Go, Vanilla JS).
-- Eco-Design: Minimalist interface to reduce data transfer and cognitive load.
+## Team
 
-🛠️ Technical Architecture
-The project follows a modular structure to ensure maintainability:
+- Rayan Boumedine - Backend and Supabase integration.
+- Alexis Launay - Front-end interface and user experience.
+- Ambroise Couturier - Data model and family/task flows.
+- Paul Mahaut - Project coordination and documentation.
 
-- Back-end: REST API developed in Go (api/ and internal/ folders).
-- Front-end: Lightweight interface in HTML/CSS/JS without heavy frameworks (public/ folder).
-- Database: Relational management of Users, Families, and Tasks.
+## Tech Stack
 
-📋 Features (MVP)
-- User Management: Registration, login, and profile management (full CRUD).
-- Family System: Create groups via invitation code and member management by an administrator.
-- Dual Dashboard: Visual separation between private personal tasks and shared family tasks.
-- Eco-Responsible Tracking: Task validation to monitor progress on common green initiatives.
+- Go - Minimal runtime overhead and a small server footprint for low energy use.
+- net/http - Standard library only, so no extra framework cost or dependency weight.
+- Vanilla JS - No bundler or framework, which keeps the front-end light and fast.
+- HTML5/CSS3 - Native browser rendering with no extra client-side runtime.
+- Supabase - Managed PostgreSQL backend reduces infrastructure overhead.
+- bcrypt - Safer password storage with a single, focused cryptographic dependency.
 
-💻 Installation and Launch
+## Local Run
+
 Clone the repository:
+
 ```bash
-git clone https://github.com/votre-repo/greenwebsite.git
+git clone https://github.com/Ambroise-C/greenwebsite.git
+cd greenwebsite
 ```
 
-Launch the Go server:
+Install dependencies and run locally:
+
 ```bash
 go run main.go
 ```
 
-Access the application:
-Open your browser at http://localhost:8080.
+Open the app at http://localhost:8080.
 
-For testing connection, credentials are: Username: Rayan, Password: 1234
+## Repository Tree
 
-👥 The Team
-Project realized by:
-- Rayan Boumedine
-- Alexis Launay
-- Ambroise Couturier
-- Paul Mahaut
+```text
+greenwebsite/                  # Project root
+├── api/                       # HTTP handlers
+├── database/schema.sql        # Supabase schema for users, families, and tasks
+├── internal/                  # Supabase client and data structs
+├── public/                    # Static HTML, CSS, and JS
+├── main.go                    # Server entry point
+├── go.mod                     # Go module and dependencies
+└── Readme.md                  # Project documentation
+```
+
+## Deliverable
+
+- [LeafTask Deliverable 2](docs/LeafTask_Deliverable2.pdf)
