@@ -78,6 +78,16 @@ func (h *Handler) Auth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Valider les inputs
+	if len(creds.User) < 1 || len(creds.Pass) < 1 {
+		http.Error(w, "Username and password required", http.StatusBadRequest)
+		return
+	}
+	if len(creds.User) > 50 || len(creds.Pass) > 100 {
+		http.Error(w, "Username or password too long", http.StatusBadRequest)
+		return
+	}
+
 	// Get user by username
 	users, _ := h.SB.SelectFrom("users", "*", map[string]interface{}{"username": creds.User})
 
