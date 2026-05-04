@@ -5,12 +5,7 @@
     --hover: #f4f4f4;
 }
 
-/* RESET & BASE */
-* { 
-    box-sizing: border-box; 
-    margin: 0; 
-    padding: 0; 
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
     font-family: 'Courier New', Courier, monospace;
@@ -18,17 +13,11 @@ body {
     color: var(--text);
     line-height: 1.6;
     padding: 40px 20px;
-    /* Améliore le rendu des polices pour éviter les sauts de texte */
     text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
 }
 
-.container { 
-    max-width: 900px; 
-    margin: 0 auto; 
-}
+.container { max-width: 900px; margin: 0 auto; }
 
-/* NAVIGATION */
 .top-nav { 
     display: flex; 
     justify-content: space-between; 
@@ -37,28 +26,18 @@ body {
     font-weight: bold; 
 }
 
-#auth-zone {
-    display: flex;
-    align-items: center;
-    min-height: 40px; /* Stabilise la hauteur de la nav */
-}
-
-/* TYPOGRAPHIE - Fix LCP */
 h1 { 
     font-size: 2rem; 
     margin-bottom: 30px; 
     font-weight: 900; 
-    line-height: 1.2;
-    min-height: 1.2em; /* Réserve l'espace pour le titre Dashboard */
+    min-height: 1.2em; /* Fix LCP */
 }
 
-/* BLOCS & SECTIONS */
 .box { 
     border: 1px solid var(--border); 
     padding: 25px; 
     margin-bottom: 25px; 
-    background: var(--bg);
-    contain: layout; /* Isole les changements de layout internes */
+    contain: layout; /* Fix CLS */
 }
 
 label { 
@@ -70,11 +49,7 @@ label {
     text-transform: uppercase;
 }
 
-/* FORMULAIRES */
-.input-group { 
-    display: flex; 
-    gap: 10px; 
-}
+.input-group { display: flex; gap: 10px; }
 
 input, select {
     flex-grow: 1;
@@ -82,7 +57,6 @@ input, select {
     padding: 12px;
     font-family: inherit;
     outline: none;
-    background: var(--bg);
 }
 
 button {
@@ -93,25 +67,14 @@ button {
     cursor: pointer;
     font-weight: bold;
     font-family: inherit;
-    transition: background 0.2s, color 0.2s;
 }
 
-button:hover { 
-    background: var(--bg); 
-    color: var(--text); 
-}
+button:hover { background: var(--bg); color: var(--text); }
 
-/* TABLES & LISTES - Fix CLS */
-.task-section {
-    margin-top: 50px; /* Remplace le style inline margin-top: 50px */
-}
+/* TABLES & SECTIONS - Fix CLS */
+.task-section { margin-top: 50px; }
 
-table { 
-    width: 100%; 
-    border-collapse: collapse; 
-    table-layout: fixed; /* Fixe la largeur des colonnes pour éviter les sauts */
-}
-
+table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 th { 
     text-align: left; 
     font-size: 0.7rem; 
@@ -119,51 +82,19 @@ th {
     border-bottom: 1px solid var(--border); 
     background: var(--hover); 
 }
+td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; word-wrap: break-word; }
 
-td { 
-    padding: 15px; 
-    border-bottom: 1px solid var(--border); 
-    font-size: 0.9rem; 
-    word-wrap: break-word;
-}
-
-tbody {
-    /* Réserve un espace minimal pour éviter que le footer ne remonte trop haut */
-    min-height: 100px;
-}
+tbody { min-height: 80px; }
 
 .text-right { text-align: right; }
-
-/* ACTIONS & ÉTATS */
-.action-btn { 
-    background: none; 
-    color: var(--text); 
-    padding: 0; 
-    border: none; 
-    text-decoration: underline; 
-    font-size: 0.7rem; 
-    margin-left: 10px; 
-}
-
-.completed { 
-    text-decoration: line-through; 
-    opacity: 0.6;
-}
+.action-btn { background: none; color: var(--text); padding: 0; border: none; text-decoration: underline; font-size: 0.7rem; margin-left: 10px; cursor: pointer; }
+.completed { text-decoration: line-through; opacity: 0.5; }
 
 #my-code {
     user-select: all; 
     cursor: pointer;
-    font-family: 'Courier New', Courier, monospace; 
-    display: inline-block;
+    display: inline-block; 
     color: #4CAF50;
-    font-weight: bold;
-    min-width: 80px; /* Évite le décalage quand le code remplace "---" */
+    min-width: 80px;
     text-align: center;
-}
-
-/* FOOTER */
-.stats-box { 
-    font-size: 0.8rem; 
-    font-weight: bold; 
-    margin-top: 40px;
 }
