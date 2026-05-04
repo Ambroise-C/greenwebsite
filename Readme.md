@@ -4,7 +4,7 @@ LeafTask is a lightweight task management app focused on eco-responsible habits.
 It is built with Go, Vanilla JS, and Supabase to keep the stack simple and fast.
 The goal is to keep the product useful while staying low complexity and low energy.
 
-Deployed URL: to be filled after Railway deployment.
+Deployed URL: https://greenwebsite-production.up.railway.app/
 
 ## Team
 
@@ -54,4 +54,4 @@ greenwebsite/                  # Project root
 
 ## Deliverable
 
-- [LeafTask Deliverable 2](docs/LeafTask_Deliverable2.pdf)
+- [LeafTask Deliverable](docs/LeafTask_Deliverable.pdf)
