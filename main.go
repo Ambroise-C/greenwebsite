@@ -18,13 +18,6 @@ func main() {
 	// 2. Initialize Supabase client
 	client := internal.InitSupabase()
 
-	// 3. CONNECTION TEST (Before starting the server)
-	users, err := client.GetUsers()
-	if err != nil {
-		log.Printf("❌ ERROR: %v", err)
-	} else {
-		log.Printf("✅ Users: %v", users)
-	}
 
 	// 4. Configure handlers
 	h := &api.Handler{SB: client}
@@ -37,12 +30,4 @@ func main() {
 	// Serve the public directory (your HTML/CSS/JS)
 	fs := http.FileServer(http.Dir("./public"))
 	http.Handle("/", fs)
-
-	// API Routes
-
-	// 5. START SERVER (This line must be the last one)
-	log.Println("🚀 Server ready on http://localhost:8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatal("Error while starting server:", err)
-	}
 }
