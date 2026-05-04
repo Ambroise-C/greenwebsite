@@ -7,7 +7,6 @@ import (
 	"mon-projet/internal"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -72,127 +71,92 @@ func (h *Handler) getNewUserID() int64 {
 }
 
 func (h *Handler) Auth(w http.ResponseWriter, r *http.Request) {
-	var creds struct {
-		User string `json:"user"`
-		Pass string `json:"pass"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
-		return
-	}
+    var creds struct {
+        User string `json:"user"`
+        Pass string `json:"pass"`
+    }
+    if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {
+        http.Error(w, "Invalid request", http.StatusBadRequest)
+        return
+    }
 
-	// Valider les inputs
-	if len(creds.User) < 1 || len(creds.Pass) < 1 {
-		http.Error(w, "Username and password required", http.StatusBadRequest)
-		return
-	}
-	if len(creds.User) > 50 || len(creds.Pass) > 100 {
-		http.Error(w, "Username or password too long", http.StatusBadRequest)
-		return
-	}
+    if len(creds.User) < 1 || len(creds.Pass) < 1 {
+        http.Error(w, "Username and password required", http.StatusBadRequest)
+        return
+    }
 
-	// Get user by username
-	users, _ := h.SB.SelectFrom("users", "user_ID,username,password,family_ID", map[string]interface{}{"username": creds.User})
+    // Chercher l'utilisateur
+    users, _ := h.SB.SelectFrom("users", "user_ID,username,password,family_ID", map[string]interface{}{"username": creds.User})
 
-	var user internal.User
-	if len(users) == 0 {
-		new_family_ID := h.getNewFamilyID()
-		new_user_ID := h.getNewUserID()
+    var user internal.User
+    if len(users) == 0 {
+        // --- CRÉATION DE COMPTE ---
+        new_family_ID := h.getNewFamilyID()
+        new_user_ID := h.getNewUserID()
 
-		log.Printf("Account creation: %s", creds.User)
-		user = internal.User{
-			UserID:   new_user_ID,
-			Username: creds.User,
-			Password: func() string {
-				hashedPassword, err := bcrypt.GenerateFromPassword([]byte(creds.Pass), bcrypt.DefaultCost)
-				if err != nil {
-					return ""
-				}
-				return string(hashedPassword)
-			}(),
-			FamilyID: new_family_ID,
-		}
-		if user.Password == "" {
-			http.Error(w, "Creation error", 500)
-			return
-		}
+        // Hachage du mot de passe
+        hashedPassword, err := bcrypt.GenerateFromPassword([]byte(creds.Pass), bcrypt.DefaultCost)
+        if err != nil {
+            http.Error(w, "Server error during hashing", 500)
+            return
+        }
 
-		// Insert user
-		inserted, err := h.SB.InsertInto("users", user)
-		if err != nil || len(inserted) == 0 {
-			log.Printf("User insertion error: %v", err)
-			http.Error(w, "Creation error", 500)
-			return
-		}
+        user = internal.User{
+            UserID:   new_user_ID,
+            Username: creds.User,
+            Password: string(hashedPassword),
+            FamilyID: new_family_ID,
+        }
 
-		// Get codes to verify uniqueness
-		codesResult, _ := h.SB.SelectFrom("families", "code", map[string]interface{}{})
-		codeMap := make(map[string]bool)
-		for _, f := range codesResult {
-			if code, ok := f["code"].(string); ok {
-				codeMap[code] = true
-			}
-		}
+        // Insertion
+        _, err = h.SB.InsertInto("users", user)
+        if err != nil {
+            http.Error(w, "Creation error", 500)
+            return
+        }
 
-		familyCode := generateShortCode(7)
-		for codeMap[familyCode] {
-			familyCode = generateShortCode(7)
-		}
+        // Création de la famille par défaut (Logique simplifiée pour l'exemple)
+        familyCode := generateShortCode(7)
+        newFamily := internal.Family{
+            FamilyID: new_family_ID,
+            OwnerID:  new_user_ID,
+            Members:  []string{user.Username},
+            Code:     familyCode,
+        }
+        h.SB.InsertInto("families", newFamily)
+        log.Printf("✅ Compte et Famille créés pour %s", user.Username)
 
-		newFamily := internal.Family{
-			FamilyID: new_family_ID,
-			OwnerID:  new_user_ID,
-			Members:  []string{user.Username},
-			Code:     familyCode,
-		}
+    } else {
+        // --- CONNEXION ---
+        userMap := users[0]
+        // Mapping manuel pour éviter les erreurs de type
+        if uID, ok := userMap["user_ID"].(float64); ok { user.UserID = int64(uID) }
+        if uName, ok := userMap["username"].(string); ok { user.Username = uName }
+        if uPass, ok := userMap["password"].(string); ok { user.Password = uPass }
+        if fID, ok := userMap["family_ID"].(float64); ok { user.FamilyID = int64(fID) }
 
-		// Insert family into Supabase
-		insertedFamilies, errFam := h.SB.InsertInto("families", newFamily)
+        // Vérification du mot de passe haché
+        err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(creds.Pass))
+        if err != nil {
+            // Optionnel : Support temporaire des anciens mots de passe en clair
+            if user.Password != creds.Pass {
+                http.Error(w, "Incorrect password", 401)
+                return
+            }
+            log.Printf("⚠️ User %s utilise encore un mot de passe non haché", user.Username)
+        }
+    }
 
-		if errFam == nil && len(insertedFamilies) > 0 {
-			user.FamilyID = new_family_ID
+    // --- RÉPONSE SÉCURISÉE ---
+    // On ne renvoie JAMAIS le champ "password" au frontend
+    response := map[string]interface{}{
+        "user_ID":   user.UserID,
+        "username":  user.Username,
+        "family_ID": user.FamilyID,
+    }
 
-			// Update user to link them to their new family
-			h.SB.UpdateTable("users", map[string]interface{}{
-				"family_ID": user.FamilyID,
-			}, map[string]interface{}{"user_ID": user.UserID})
-
-			log.Printf("✅ Family #%d created for %s", user.FamilyID, user.Username)
-		} else {
-			log.Printf("⚠️ Family creation error: %v", errFam)
-		}
-
-	} else {
-		// Convert map to User struct
-		if len(users) > 0 {
-			userMap := users[0]
-			if userID, ok := userMap["user_ID"].(float64); ok {
-				user.UserID = int64(userID)
-			}
-			if username, ok := userMap["username"].(string); ok {
-				user.Username = username
-			}
-			if password, ok := userMap["password"].(string); ok {
-				user.Password = password
-			}
-			if familyID, ok := userMap["family_ID"].(float64); ok {
-				user.FamilyID = int64(familyID)
-			}
-		}
-
-		if strings.HasPrefix(user.Password, "$2") {
-			if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(creds.Pass)); err != nil {
-				http.Error(w, "Incorrect password", 401)
-				return
-			}
-		} else if user.Password != creds.Pass {
-			http.Error(w, "Incorrect password", 401)
-			return
-		}
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user)
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(response)
 }
 
 func (h *Handler) UpdateUserHandler(w http.ResponseWriter, r *http.Request) {

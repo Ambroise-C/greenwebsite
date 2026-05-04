@@ -72,8 +72,11 @@ async function leaveFamily() {
 }
 
 async function handleAuth() {
-    const user = getEl('userIn').value.trim();
-    const pass = getEl('passIn').value.trim();
+    const userIn = getEl('userIn');
+    const passIn = getEl('passIn');
+    const user = userIn.value.trim();
+    const pass = passIn.value.trim();
+    
     if (!user || !pass) return;
 
     try {
@@ -85,17 +88,24 @@ async function handleAuth() {
 
         if (response.ok) {
             const data = await response.json();
+            // Le serveur renvoie { "username": "...", "user_ID": ..., "family_ID": ... }
             currentUser = data.username;
             currentUserData = data; 
+            
             localStorage.setItem('leafCurrentSession', currentUser);
+            
+            // Nettoyage des champs de saisie par sécurité
+            userIn.value = "";
+            passIn.value = "";
+
             await refreshData();
         } else if (response.status === 401) {
-            alert("Incorrect password!");
+            alert("Mot de passe incorrect !");
         } else {
-            alert("Authentication error");
+            alert("Erreur d'authentification");
         }
     } catch (err) {
-        alert("Server unreachable");
+        alert("Serveur injoignable");
     }
 }
 
