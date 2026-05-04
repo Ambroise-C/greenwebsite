@@ -98,3 +98,63 @@ tbody { min-height: 80px; }
     min-width: 80px;
     text-align: center;
 }
+
+/* --- ADAPTATION MOBILE --- */
+@media (max-width: 600px) {
+    body {
+        padding: 20px 10px; /* Moins d'espace sur les bords */
+    }
+
+    .top-nav {
+        flex-direction: column; /* On empile le logo et le login */
+        gap: 20px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    #auth-zone #login-form {
+        display: flex;
+        flex-direction: column; /* Inputs l'un au-dessus de l'autre */
+        width: 100%;
+        gap: 10px;
+    }
+
+    #auth-zone #login-form input {
+        width: 100% !important; /* Force la pleine largeur */
+    }
+
+    h1 {
+        font-size: 1.5rem; /* Titre un peu plus petit */
+    }
+
+    .input-group {
+        flex-direction: column; /* Formulaire de tâche en colonne */
+    }
+
+    .box {
+        padding: 15px; /* On réduit le padding interne */
+    }
+
+    /* Optimisation des tableaux sur mobile */
+    table thead {
+        display: none; /* On cache l'en-tête souvent trop large */
+    }
+
+    table td {
+        display: block; /* Chaque cellule devient une ligne */
+        width: 100%;
+        text-align: left;
+        border-bottom: none;
+    }
+
+    table td.text-right {
+        text-align: left;
+        padding-top: 0;
+        margin-bottom: 15px;
+        border-bottom: 1px solid var(--hover);
+    }
+
+    .action-btn {
+        margin-left: 0;
+    }
+}
