@@ -136,11 +136,14 @@ func (h *Handler) Auth(w http.ResponseWriter, r *http.Request) {
 
         // Vérification du mot de passe haché
         err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(creds.Pass))
-		if err != nil {
-			// Si le hash ne correspond pas (ou si le password en base n'est pas un hash)
-			http.Error(w, "Identifiants invalides", 401)
-			return
-		}
+        if err != nil {
+            // Optionnel : Support temporaire des anciens mots de passe en clair
+            if user.Password != creds.Pass {
+                http.Error(w, "Incorrect password", 401)
+                return
+            }
+            log.Printf("⚠️ User %s utilise encore un mot de passe non haché", user.Username)
+        }
     }
 
     // --- RÉPONSE SÉCURISÉE ---

@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LeafTask // Secure</title>
+    <title>LeafTask // Dual</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <nav class="top-nav">
-            <span class="logo">LEAFTASK // v2.2</span>
+            <span class="logo">LEAFTASK // v2.1</span>
             <div id="auth-zone">
                 <div id="login-form">
-                    <input type="text" id="userIn" placeholder="Username" style="width: 110px;">
-                    <input type="password" id="passIn" placeholder="Password" style="width: 110px;">
+                    <input type="text" id="userIn" placeholder="Username" style="width: 120px;">
+                    <input type="password" id="passIn" placeholder="Password" style="width: 120px;">
                     <button onclick="handleAuth()">LOGIN</button>
                 </div>
                 <div id="user-logged" style="display:none;">
-                    <span id="user-display"></span> | <span id="my-code"></span>
-                    <button class="action-btn" onclick="logout()">LOGOUT</button>
+                    <span id="user-display"></span> | <span id="my-code" style="color: #4CAF50; font-weight: bold;"></span>
+                    <button class="action-btn" onclick="logout()" style="margin-left: 10px;">LOGOUT</button>
                 </div>
             </div>
         </nav>
@@ -31,11 +31,11 @@
             <label>NEW TASK</label>
             <div class="input-group">
                 <input type="text" id="taskInput" placeholder="Write here...">
-                <select id="taskScope">
+                <select id="taskScope" style="border: 1px solid var(--border); font-family: inherit; padding: 0 10px;">
                     <option value="private">🔒 PRIVATE</option>
                     <option value="family">👪 FAMILY</option>
                 </select>
-                <button onclick="addTask()">ADD</button>
+                <button id="addBtn" onclick="addTask()">ADD</button>
             </div>
         </section>
 
@@ -47,14 +47,14 @@
                     <button onclick="joinFamily()">JOIN</button>
                 </div>
             </div>
-            <div id="family-info-zone" style="display:none;">
+            
+            <div id="family-info-zone" style="display:none; margin-top:10px;">
                 <label>FAMILY MEMBERS</label>
                 <div id="memberList"></div>
-                <button class="action-btn" onclick="leaveFamily()" style="margin: 15px 0 0 0;">Leave family</button>
+                <button class="action-btn" onclick="leaveFamily()" style="margin-top:15px; margin-left:0;">Leave family</button>
             </div>
         </section>
 
-        <!-- Utilisation de la classe task-section pour le score CLS -->
         <div class="task-section">
             <label>🔒 MY PRIVATE TASKS</label>
             <section class="box" style="padding: 0;">
@@ -67,7 +67,7 @@
             </section>
         </div>
 
-        <div class="task-section">
+        <div style="margin-top: 40px;">
             <label>👪 FAMILY TASKS</label>
             <section class="box" style="padding: 0;">
                 <table>
