@@ -18,7 +18,6 @@ body {
     color: var(--text);
     line-height: 1.6;
     padding: 40px 20px;
-    /* Améliore le rendu des polices pour éviter les sauts de texte */
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
 }
@@ -40,25 +39,24 @@ body {
 #auth-zone {
     display: flex;
     align-items: center;
-    min-height: 40px; /* Stabilise la hauteur de la nav */
+    min-height: 40px; 
 }
 
-/* TYPOGRAPHIE - Fix LCP */
 h1 { 
     font-size: 2rem; 
     margin-bottom: 30px; 
     font-weight: 900; 
     line-height: 1.2;
-    min-height: 1.2em; /* Réserve l'espace pour le titre Dashboard */
+    min-height: 1.2em; 
 }
 
-/* BLOCS & SECTIONS */
+
 .box { 
     border: 1px solid var(--border); 
     padding: 25px; 
     margin-bottom: 25px; 
     background: var(--bg);
-    contain: layout; /* Isole les changements de layout internes */
+    contain: layout; 
 }
 
 label { 
@@ -70,7 +68,7 @@ label {
     text-transform: uppercase;
 }
 
-/* FORMULAIRES */
+
 .input-group { 
     display: flex; 
     gap: 10px; 
@@ -101,15 +99,15 @@ button:hover {
     color: var(--text); 
 }
 
-/* TABLES & LISTES - Fix CLS */
+
 .task-section {
-    margin-top: 50px; /* Remplace le style inline margin-top: 50px */
+    margin-top: 50px;
 }
 
 table { 
     width: 100%; 
     border-collapse: collapse; 
-    table-layout: fixed; /* Fixe la largeur des colonnes pour éviter les sauts */
+    table-layout: fixed;
 }
 
 th { 
@@ -128,13 +126,11 @@ td {
 }
 
 tbody {
-    /* Réserve un espace minimal pour éviter que le footer ne remonte trop haut */
     min-height: 100px;
 }
 
 .text-right { text-align: right; }
 
-/* ACTIONS & ÉTATS */
 .action-btn { 
     background: none; 
     color: var(--text); 
@@ -157,11 +153,10 @@ tbody {
     display: inline-block;
     color: #4CAF50;
     font-weight: bold;
-    min-width: 80px; /* Évite le décalage quand le code remplace "---" */
+    min-width: 80px; 
     text-align: center;
 }
 
-/* FOOTER */
 .stats-box { 
     font-size: 0.8rem; 
     font-weight: bold; 

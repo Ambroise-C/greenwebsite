@@ -46,7 +46,6 @@ func decodeSupabaseResponse(resp *http.Response, target interface{}) error {
 	return json.NewDecoder(resp.Body).Decode(target)
 }
 
-// SelectFrom - Generic SELECT query with filters
 func (sc *SupabaseClient) SelectFrom(table string, selectCols string, filters map[string]interface{}) ([]map[string]interface{}, error) {
 	u, _ := url.Parse(fmt.Sprintf("%s/rest/v1/%s", sc.URL, table))
 	q := u.Query()
@@ -73,7 +72,7 @@ func (sc *SupabaseClient) SelectFrom(table string, selectCols string, filters ma
 	return data, nil
 }
 
-// InsertInto - Generic INSERT query
+
 func (sc *SupabaseClient) InsertInto(table string, data interface{}) ([]map[string]interface{}, error) {
 	url := fmt.Sprintf("%s/rest/v1/%s", sc.URL, table)
 	jsonBody, _ := json.Marshal(data)
@@ -95,7 +94,6 @@ func (sc *SupabaseClient) InsertInto(table string, data interface{}) ([]map[stri
 	return result, nil
 }
 
-// UpdateTable - Generic UPDATE query
 func (sc *SupabaseClient) UpdateTable(table string, data map[string]interface{}, filters map[string]interface{}) error {
 	u, _ := url.Parse(fmt.Sprintf("%s/rest/v1/%s", sc.URL, table))
 	q := u.Query()
@@ -118,7 +116,6 @@ func (sc *SupabaseClient) UpdateTable(table string, data map[string]interface{},
 	return decodeSupabaseResponse(resp, nil)
 }
 
-// DeleteFrom - Generic DELETE query
 func (sc *SupabaseClient) DeleteFrom(table string, filters map[string]interface{}) error {
 	u, _ := url.Parse(fmt.Sprintf("%s/rest/v1/%s", sc.URL, table))
 	q := u.Query()
@@ -140,7 +137,7 @@ func (sc *SupabaseClient) DeleteFrom(table string, filters map[string]interface{
 	return decodeSupabaseResponse(resp, nil)
 }
 
-// Query example: Get all users
+
 func (sc *SupabaseClient) GetUsers() ([]map[string]interface{}, error) {
 	url := fmt.Sprintf("%s/rest/v1/users?select=*", sc.URL)
 	req, _ := http.NewRequest("GET", url, nil)
@@ -159,7 +156,6 @@ func (sc *SupabaseClient) GetUsers() ([]map[string]interface{}, error) {
 	return data, nil
 }
 
-// Insert example
 func (sc *SupabaseClient) InsertUser(email, name string) error {
 	url := fmt.Sprintf("%s/rest/v1/users", sc.URL)
 	body := map[string]string{"email": email, "name": name}

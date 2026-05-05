@@ -4,7 +4,7 @@ let currentTasks = { private: [], family: [] };
 
 function getEl(id) { return document.getElementById(id); }
 
-// NEW FUNCTION: SIMPLE COPY WITHOUT COLOR EFFECT
+
 async function copyCode() {
     const code = getEl('my-code').innerText;
     if (!code || code === "---" || code === "COPIED!") return;
@@ -88,24 +88,22 @@ async function handleAuth() {
 
         if (response.ok) {
             const data = await response.json();
-            // Le serveur renvoie { "username": "...", "user_ID": ..., "family_ID": ... }
             currentUser = data.username;
             currentUserData = data; 
             
             localStorage.setItem('leafCurrentSession', currentUser);
             
-            // Nettoyage des champs de saisie par sécurité
             userIn.value = "";
             passIn.value = "";
 
             await refreshData();
         } else if (response.status === 401) {
-            alert("Mot de passe incorrect !");
+            alert("Incorrect password");
         } else {
-            alert("Erreur d'authentification");
+            alert("Authentication error");
         }
     } catch (err) {
-        alert("Serveur injoignable");
+        alert("Server unreachable");
     }
 }
 
@@ -145,7 +143,6 @@ async function deleteTask(id) {
     } catch (err) { console.error("Error:", err); }
 }
 
-// UPDATE: CLEAR EVERYTHING ON LOGOUT
 function logout() { 
     currentUser = null; 
     currentUserData = { family_ID: 0, code: "", user_ID: 0, members: [] };

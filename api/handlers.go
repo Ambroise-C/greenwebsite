@@ -84,16 +84,13 @@ func (h *Handler) Auth(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    // Chercher l'utilisateur
     users, _ := h.SB.SelectFrom("users", "user_ID,username,password,family_ID", map[string]interface{}{"username": creds.User})
 
     var user internal.User
     if len(users) == 0 {
-        // --- CRÉATION DE COMPTE ---
         new_family_ID := h.getNewFamilyID()
         new_user_ID := h.getNewUserID()
 
-        // Hachage du mot de passe
         hashedPassword, err := bcrypt.GenerateFromPassword([]byte(creds.Pass), bcrypt.DefaultCost)
         if err != nil {
             http.Error(w, "Server error during hashing", 500)
@@ -107,14 +104,12 @@ func (h *Handler) Auth(w http.ResponseWriter, r *http.Request) {
             FamilyID: new_family_ID,
         }
 
-        // Insertion
         _, err = h.SB.InsertInto("users", user)
         if err != nil {
             http.Error(w, "Creation error", 500)
             return
         }
 
-        // Création de la famille par défaut (Logique simplifiée pour l'exemple)
         familyCode := generateShortCode(7)
         newFamily := internal.Family{
             FamilyID: new_family_ID,
@@ -126,28 +121,18 @@ func (h *Handler) Auth(w http.ResponseWriter, r *http.Request) {
         log.Printf("✅ Compte et Famille créés pour %s", user.Username)
 
     } else {
-        // --- CONNEXION ---
         userMap := users[0]
-        // Mapping manuel pour éviter les erreurs de type
         if uID, ok := userMap["user_ID"].(float64); ok { user.UserID = int64(uID) }
         if uName, ok := userMap["username"].(string); ok { user.Username = uName }
         if uPass, ok := userMap["password"].(string); ok { user.Password = uPass }
         if fID, ok := userMap["family_ID"].(float64); ok { user.FamilyID = int64(fID) }
 
-        // Vérification du mot de passe haché
         err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(creds.Pass))
         if err != nil {
-            // Optionnel : Support temporaire des anciens mots de passe en clair
-            if user.Password != creds.Pass {
-                http.Error(w, "Incorrect password", 401)
-                return
-            }
-            log.Printf("⚠️ User %s utilise encore un mot de passe non haché", user.Username)
+			http.Error(w, "Invalid credentials", http.StatusUnauthorized)
         }
     }
 
-    // --- RÉPONSE SÉCURISÉE ---
-    // On ne renvoie JAMAIS le champ "password" au frontend
     response := map[string]interface{}{
         "user_ID":   user.UserID,
         "username":  user.Username,
@@ -210,14 +195,12 @@ func (h *Handler) TasksHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get user by username
 	users, _ := h.SB.SelectFrom("users", "user_ID,username,password,family_ID", map[string]interface{}{"username": username})
 	if len(users) == 0 {
 		http.Error(w, "User not found", 404)
 		return
 	}
 
-	// Convert map to User struct
 	userMap := users[0]
 	var dbUser internal.User
 	if userID, ok := userMap["user_ID"].(float64); ok {
@@ -232,13 +215,10 @@ func (h *Handler) TasksHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		// Get private tasks
 		private, _ := h.SB.SelectFrom("tasks", "*", map[string]interface{}{"user_ID": dbUser.UserID, "scope": "private"})
 
-		// Get family tasks
 		family, _ := h.SB.SelectFrom("tasks", "*", map[string]interface{}{"family_ID": dbUser.FamilyID, "scope": "family"})
 
-		// Get family info
 		families, _ := h.SB.SelectFrom("families", "*", map[string]interface{}{"family_ID": dbUser.FamilyID})
 
 		resp := map[string]interface{}{
@@ -285,7 +265,6 @@ func (h *Handler) JoinFamilyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewDecoder(r.Body).Decode(&body)
 
-	// 1. Get the user and their current family to clean up later
 	users, _ := h.SB.SelectFrom("users", "user_ID,username,password,family_ID", map[string]interface{}{"username": username})
 	if len(users) == 0 {
 		http.Error(w, "User not found", 404)
@@ -302,7 +281,6 @@ func (h *Handler) JoinFamilyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	oldFamilyID := user.FamilyID
 
-	// 2. Find the target family they want to join
 	families, _ := h.SB.SelectFrom("families", "*", map[string]interface{}{"code": body.Code})
 	if len(families) == 0 {
 		http.Error(w, "Invalid code", 404)
@@ -322,14 +300,11 @@ func (h *Handler) JoinFamilyHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 3. Update the user's family_ID in the database
 	h.SB.UpdateTable("users", map[string]interface{}{"family_ID": target.FamilyID}, map[string]interface{}{"username": username})
 
-	// 4. Update the target family's member list
 	newMembers := append(target.Members, username)
 	h.SB.UpdateTable("families", map[string]interface{}{"members": newMembers}, map[string]interface{}{"family_ID": target.FamilyID})
 
-	// 5. CLEAN UP: Check if the old family is now empty and delete it
 	oldFamilies, _ := h.SB.SelectFrom("families", "*", map[string]interface{}{"family_ID": oldFamilyID})
 
 	if len(oldFamilies) > 0 {
@@ -351,12 +326,10 @@ func (h *Handler) JoinFamilyHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if len(remainingMembers) == 0 {
-			// Delete tasks and family if no one is left
 			h.SB.DeleteFrom("tasks", map[string]interface{}{"family_ID": oldFamilyID})
 			h.SB.DeleteFrom("families", map[string]interface{}{"family_ID": oldFamilyID})
 			log.Printf("Cleaned up orphaned family %d after user %s joined a new one", oldFamilyID, username)
 		} else {
-			// Otherwise, just update the old family's member list
 			h.SB.UpdateTable("families", map[string]interface{}{"members": remainingMembers}, map[string]interface{}{"family_ID": oldFamilyID})
 		}
 	}
@@ -367,7 +340,6 @@ func (h *Handler) JoinFamilyHandler(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) LeaveFamilyHandler(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("user")
 
-	// 1. Get user data
 	users, _ := h.SB.SelectFrom("users", "user_ID,username,password,family_ID", map[string]interface{}{"username": username})
 	if len(users) == 0 {
 		http.Error(w, "User not found", 404)
@@ -383,7 +355,6 @@ func (h *Handler) LeaveFamilyHandler(w http.ResponseWriter, r *http.Request) {
 		user.FamilyID = int64(famID)
 	}
 
-	// 2. Get current family data
 	families, _ := h.SB.SelectFrom("families", "*", map[string]interface{}{"family_ID": user.FamilyID})
 
 	if len(families) > 0 {
@@ -399,27 +370,20 @@ func (h *Handler) LeaveFamilyHandler(w http.ResponseWriter, r *http.Request) {
 
 		var updatedMembers []string
 
-		// Remove the user from the members list
 		for _, m := range oldFam.Members {
 			if m != username {
 				updatedMembers = append(updatedMembers, m)
 			}
 		}
 
-		// 3. Check if family is now empty
 		if len(updatedMembers) == 0 {
-			// Delete family tasks first (to avoid foreign key conflicts)
 			h.SB.DeleteFrom("tasks", map[string]interface{}{"family_ID": user.FamilyID})
-			// Delete the family
 			h.SB.DeleteFrom("families", map[string]interface{}{"family_ID": user.FamilyID})
 			log.Printf("Family %d deleted: no members left", user.FamilyID)
 		} else {
-			// Update the family with the remaining members
 			h.SB.UpdateTable("families", map[string]interface{}{"members": updatedMembers}, map[string]interface{}{"family_ID": user.FamilyID})
 		}
 	}
-
-	// 4. Create a brand new family for the user
 	newFID := h.getNewFamilyID()
 	newFam := internal.Family{
 		FamilyID: newFID,
@@ -428,10 +392,8 @@ func (h *Handler) LeaveFamilyHandler(w http.ResponseWriter, r *http.Request) {
 		Code:     generateShortCode(7),
 	}
 
-	// Insert new family
 	h.SB.InsertInto("families", newFam)
 
-	// 5. Update the user to link them to this new family ID
 	h.SB.UpdateTable("users", map[string]interface{}{
 		"family_ID": newFID,
 	}, map[string]interface{}{"username": username})
